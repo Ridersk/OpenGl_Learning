@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
+#include <common/shader.hpp>
+
 using namespace std;
 using namespace glm;
 
