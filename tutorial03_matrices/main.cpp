@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "../common/shader.hpp"
 
 using namespace std;
@@ -126,7 +128,7 @@ void draw(GLFWwindow *window, GLuint *vertices)
   glDisableVertexAttribArray(0);
 }
 
-void run(GLFWwindow *window, GLuint *vertices, GLuint *programID)
+void run(GLFWwindow *window, GLuint *vertices, GLuint programID, GLuint MatrixID, mat4 MVP)
 {
 
   // Dark blue background
@@ -135,7 +137,8 @@ void run(GLFWwindow *window, GLuint *vertices, GLuint *programID)
   do
   {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(*programID); // use my program
+    glUseProgram(programID); // use my program
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
     draw(window, vertices);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
@@ -147,11 +150,35 @@ void loadShaders(GLuint *programID)
   *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
 }
 
+void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp) {
+  // Get a handle for our "MVP" uniform
+  // Only during the initialisation
+  *MatrixID = glGetUniformLocation(*programID, "MVP");
+
+  // Screen Projection, 45° Field of View
+  mat4 Projection = perspective(radians(45.0f), (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
+
+  // View: Camera matrix
+  mat4 View = lookAt(
+    vec3(4, 3, 3), // Camera position
+    vec3(0, 0, 0),
+    vec3(0, 1, 0) // Head is up
+  );
+
+  // Model matrix
+  mat4 Model = mat4(1.0f);
+
+  // ModelViewProjection
+  *mvp = Projection * View * Model;
+}
+
 int main()
 {
   GLFWwindow *window;
   GLuint programID;
+  GLuint MatrixId;
   GLuint vertices[5];
+  mat4 mvp;
 
   glewExperimental = true;
 
@@ -163,6 +190,7 @@ int main()
   createWindow(&window, vertices);
   addInputs(window);
   loadShaders(&programID);
-  run(window, vertices, &programID);
+  setPerspective(&programID, &MatrixId, &mvp);
+  run(window, vertices, programID, MatrixId, mvp);
   return 0;
 }
