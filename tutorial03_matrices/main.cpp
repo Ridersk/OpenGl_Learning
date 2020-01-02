@@ -64,43 +64,35 @@ void defineVertexArray(GLuint *VertexArrayID)
   glBindVertexArray(*VertexArrayID);
 }
 
-void createVertexBuffer(GLuint *vertexBuffer)
+void createObject(GLuint object)
 {
-  static GLfloat g_vertex_buffer_data[] = {
-      -1.0f,
-      -1.0f,
-      0.0f,
-      1.0f,
-      -1.0f,
-      0.0f,
-      0.0f,
-      1.0f,
-      0.0f,
+  // Add vertex_positions to current GL_ARRAY_BUFFER ID
+  const GLfloat objectVertices[] = {
+      -1.0f, -1.0f, 0.0f,
+      1.0f, -1.0f, 0.0f,
+      0.0f, 1.0f, 0.0f,
   };
 
-  cout << g_vertex_buffer_data << endl;
-
-  glGenBuffers(1, vertexBuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
+  glGenBuffers(1, &object);
+  glBindBuffer(GL_ARRAY_BUFFER, object);
   glBufferData(
       GL_ARRAY_BUFFER,
-      sizeof(g_vertex_buffer_data),
-      g_vertex_buffer_data, GL_STATIC_DRAW);
+      sizeof(objectVertices),
+      objectVertices, GL_STATIC_DRAW);
 }
 
-void createWindow(GLFWwindow **window, GLuint *vertices)
+void createWindow(GLFWwindow **window, GLuint *vertexArrayId, GLuint *objects)
 {
-  GLuint VertexArrayID; // basis to use vertices
-  GLuint vertexBuffer;
+  GLuint object;
 
   addHints();
   *window = openWindow();
   createOpenGlContext(*window);
-  defineVertexArray(&VertexArrayID);
-  createVertexBuffer(&vertexBuffer);
+  defineVertexArray(vertexArrayId);
+  createObject(object);
 
   // static, change it late
-  vertices[0] = vertexBuffer;
+  objects[0] = object;
 }
 
 // RUN
@@ -111,14 +103,17 @@ void swapBuffers(GLFWwindow *window)
   glfwPollEvents();
 }
 
-void draw(GLFWwindow *window, GLuint *vertices)
+void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
 {
-  // cout<< vertices[0]<<endl;
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, vertices[0]);
+  GLint position_attrib = glGetAttribLocation(
+    programID, "vertexPosition_modelspace");
+  GLint pointDimensions = 3;
+  
+
+  glEnableVertexAttribArray(position_attrib);
   glVertexAttribPointer(
-      0,        // shader in  MyVertexShader.lma (layout(location = 0))
-      3,        // size
+      position_attrib,        // shader in  MyVertexShader.lma (layout(location = 0))
+      pointDimensions,        // size
       GL_FLOAT, // type
       GL_FALSE, // normalization
       0,        // stride
@@ -128,7 +123,7 @@ void draw(GLFWwindow *window, GLuint *vertices)
   glDisableVertexAttribArray(0);
 }
 
-void run(GLFWwindow *window, GLuint *vertices, GLuint programID, GLuint MatrixID, mat4 MVP)
+void run(GLFWwindow *window, GLuint *objects, GLuint programID, GLuint mvpId, mat4 MVP)
 {
 
   // Dark blue background
@@ -138,8 +133,8 @@ void run(GLFWwindow *window, GLuint *vertices, GLuint programID, GLuint MatrixID
   {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-    draw(window, vertices);
+		glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
+    draw(window, objects, programID);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0);
@@ -176,9 +171,11 @@ int main()
 {
   GLFWwindow *window;
   GLuint programID;
-  GLuint MatrixId;
-  GLuint vertices[5];
+  GLuint mvpId;
+  GLuint vertexArrayID; // basis to use vertices (points of objects)
+  GLuint objects[5];
   mat4 mvp;
+
 
   glewExperimental = true;
 
@@ -187,10 +184,10 @@ int main()
     fprintf(stderr, "Failed to initialize GLFW\n");
   }
 
-  createWindow(&window, vertices);
+  createWindow(&window, &vertexArrayID, objects);
   addInputs(window);
   loadShaders(&programID);
-  setPerspective(&programID, &MatrixId, &mvp);
-  run(window, vertices, programID, MatrixId, mvp);
+  setPerspective(&programID, &mvpId, &mvp);
+  run(window, objects, programID, mvpId, mvp);
   return 0;
 }
