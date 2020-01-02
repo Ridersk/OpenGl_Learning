@@ -62,7 +62,7 @@ void defineVertexArray(GLuint *VertexArrayID)
   glBindVertexArray(*VertexArrayID);
 }
 
-void createObject(GLuint object)
+void createObject(GLuint *object)
 {
   // Add vertex_positions to current GL_ARRAY_BUFFER ID
   static const GLfloat objectVertices[] = {
@@ -71,24 +71,26 @@ void createObject(GLuint object)
       0.0f, 1.0f, 0.0f,
   };
 
-  glGenBuffers(1, &object);
-  glBindBuffer(GL_ARRAY_BUFFER, object);
+  glGenBuffers(1, object);
+  glBindBuffer(GL_ARRAY_BUFFER, *object);
   glBufferData(
       GL_ARRAY_BUFFER,
       sizeof(objectVertices),
       objectVertices, GL_STATIC_DRAW);
 }
 
-void createWindow(GLFWwindow **window, GLuint *vertexArrayId, GLuint *objects)
+void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
 {
-  GLuint object;
-
   addHints();
   *window = openWindow();
   createOpenGlContext(*window);
   defineVertexArray(vertexArrayId);
-  createObject(object);
+}
 
+void createObjects(GLuint *objects) {
+  GLuint object;
+
+  createObject(&object);
   // static, change it late
   objects[0] = object;
 }
@@ -154,9 +156,10 @@ int main()
     fprintf(stderr, "Failed to initialize GLFW\n");
   }
 
-  createWindow(&window, &vertexArrayID, objects);
+  createWindow(&window, &vertexArrayID);
   addInputs(window);
   loadShaders(&programID);
+  createObjects(objects);
   run(window, objects, programID);
   return 0;
 }

@@ -75,7 +75,7 @@ void addFragmentObject(vector<GLfloat> *objectVertices, GLfloat *object, int qtt
   qttFragmentObjects++;
 }
 
-void createCube(GLuint object)
+void createCube(GLuint *object)
 {
   GLfloat triangle1[] = {
     -1.0f, -1.0f, 0.0f,
@@ -166,8 +166,8 @@ void createCube(GLuint object)
   addFragmentObject(&objectVertices, triangle11, 3);
   addFragmentObject(&objectVertices, triangle12, 3);
 
-  glGenBuffers(1, &object);
-  glBindBuffer(GL_ARRAY_BUFFER, object);
+  glGenBuffers(1, object);
+  glBindBuffer(GL_ARRAY_BUFFER, *object);
   glBufferData(
       GL_ARRAY_BUFFER,
       objectVertices.size() * sizeof(GLfloat),
@@ -182,12 +182,11 @@ void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
   defineVertexArray(vertexArrayId);
 }
 
-void createObjects(GLuint *objects) {
+void createObjects(vector<GLuint> *objects) {
   GLuint object;
-  createCube(object);
+  createCube(&object);
 
-  // static, change it late
-  objects[0] = object;
+  objects->push_back(object);
 }
 
 // RUN
@@ -198,7 +197,7 @@ void swapBuffers(GLFWwindow *window)
   glfwPollEvents();
 }
 
-void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
+void draw(GLFWwindow *window, vector<GLuint> objects, GLuint programID)
 {
   GLint position_attrib = glGetAttribLocation(
     programID, "vertexPosition_modelspace");
@@ -218,7 +217,7 @@ void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
   glDisableVertexAttribArray(0);
 }
 
-void run(GLFWwindow *window, GLuint *objects, GLuint programID, GLuint mvpId, mat4 MVP)
+void run(GLFWwindow *window, vector<GLuint> objects, GLuint programID, GLuint mvpId, mat4 MVP)
 {
 
   // Dark blue background
@@ -268,7 +267,7 @@ int main()
   GLuint programID;
   GLuint mvpId;
   GLuint vertexArrayID; // basis to use vertices (points of objects)
-  GLuint objects[1];
+  vector<GLuint> objects;
   mat4 mvp;
 
 
@@ -283,7 +282,7 @@ int main()
   addInputs(window);
   loadShaders(&programID);
   setPerspective(&programID, &mvpId, &mvp);
-  createObjects(objects);
+  createObjects(&objects);
   run(window, objects, programID, mvpId, mvp);
   return 0;
 }
