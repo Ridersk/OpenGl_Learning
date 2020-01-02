@@ -65,7 +65,7 @@ void defineVertexArray(GLuint *VertexArrayID)
 void createObject(GLuint object)
 {
   // Add vertex_positions to current GL_ARRAY_BUFFER ID
-  const GLfloat objectVertices[] = {
+  static const GLfloat objectVertices[] = {
       -1.0f, -1.0f, 0.0f,
       1.0f, -1.0f, 0.0f,
       0.0f, 1.0f, 0.0f,

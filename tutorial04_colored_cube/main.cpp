@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <tuple>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <vector>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -16,7 +18,7 @@ static const int WINDOW_WIDTH = 1366;
 static const int WINDOW_HEIGHT = 768;
 static const char TITLE[50] = "Tutorial 01";
 
-// DEFINES
+int qttFragmentObjects = 0;
 
 void addHints()
 {
@@ -64,32 +66,125 @@ void defineVertexArray(GLuint *VertexArrayID)
   glBindVertexArray(*VertexArrayID);
 }
 
-void createObject(GLuint object)
+void addFragmentObject(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints) {
+  int dimensions = 3;
+  for(int i = 0; i < dimensions * qttPoints; i++) {
+    objectVertices->push_back(object[i]);
+  }
+
+  qttFragmentObjects++;
+}
+
+void createCube(GLuint object)
 {
-  // Add vertex_positions to current GL_ARRAY_BUFFER ID
-  static const GLfloat objectVertices[] = {
-      -1.0f, -1.0f, 0.0f,
-      1.0f, -1.0f, 0.0f,
-      0.0f, 1.0f, 0.0f,
+  GLfloat triangle1[] = {
+    -1.0f, -1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f
   };
+
+  GLfloat triangle2[] = {
+    1.0f, 1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f
+  };
+
+  GLfloat triangle3[] = {
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f
+  };
+
+  GLfloat triangle4[] = {
+    1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f
+  };
+
+  GLfloat triangle5[] = {
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f
+  };
+
+  GLfloat triangle6[] = {
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f
+  };
+
+  GLfloat triangle7[] = {
+    -1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+  };
+
+  GLfloat triangle8[] = {
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f
+  };
+
+  GLfloat triangle9[] = {
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+  };
+
+  GLfloat triangle10[] = {
+    1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f
+  };
+
+  GLfloat triangle11[] = {
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f
+  };
+
+  GLfloat triangle12[] = {
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+  };
+
+
+
+  vector<GLfloat> objectVertices;
+
+  addFragmentObject(&objectVertices, triangle1, 3);
+  addFragmentObject(&objectVertices, triangle2, 3);
+  addFragmentObject(&objectVertices, triangle3, 3);
+  addFragmentObject(&objectVertices, triangle4, 3);
+  addFragmentObject(&objectVertices, triangle5, 3);
+  addFragmentObject(&objectVertices, triangle6, 3);
+  addFragmentObject(&objectVertices, triangle7, 3);
+  addFragmentObject(&objectVertices, triangle8, 3);
+  addFragmentObject(&objectVertices, triangle9, 3);
+  addFragmentObject(&objectVertices, triangle10, 3);
+  addFragmentObject(&objectVertices, triangle11, 3);
+  addFragmentObject(&objectVertices, triangle12, 3);
 
   glGenBuffers(1, &object);
   glBindBuffer(GL_ARRAY_BUFFER, object);
   glBufferData(
       GL_ARRAY_BUFFER,
-      sizeof(objectVertices),
-      objectVertices, GL_STATIC_DRAW);
+      objectVertices.size() * sizeof(GLfloat),
+      static_cast<void*>(objectVertices.data()), GL_STATIC_DRAW);
 }
 
-void createWindow(GLFWwindow **window, GLuint *vertexArrayId, GLuint *objects)
+void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
 {
-  GLuint object;
-
   addHints();
   *window = openWindow();
   createOpenGlContext(*window);
   defineVertexArray(vertexArrayId);
-  createObject(object);
+}
+
+void createObjects(GLuint *objects) {
+  GLuint object;
+  createCube(object);
 
   // static, change it late
   objects[0] = object;
@@ -119,7 +214,7 @@ void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
       0,        // stride
       (void *)0 // array buffer offset
   );
-  glDrawArrays(GL_TRIANGLES, 0, 3);
+  glDrawArrays(GL_TRIANGLES, 0, qttFragmentObjects*3);
   glDisableVertexAttribArray(0);
 }
 
@@ -173,7 +268,7 @@ int main()
   GLuint programID;
   GLuint mvpId;
   GLuint vertexArrayID; // basis to use vertices (points of objects)
-  GLuint objects[5];
+  GLuint objects[1];
   mat4 mvp;
 
 
@@ -184,10 +279,11 @@ int main()
     fprintf(stderr, "Failed to initialize GLFW\n");
   }
 
-  createWindow(&window, &vertexArrayID, objects);
+  createWindow(&window, &vertexArrayID);
   addInputs(window);
   loadShaders(&programID);
   setPerspective(&programID, &mvpId, &mvp);
+  createObjects(objects);
   run(window, objects, programID, mvpId, mvp);
   return 0;
 }
