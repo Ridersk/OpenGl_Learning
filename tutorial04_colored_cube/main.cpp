@@ -373,7 +373,6 @@ void draw(GLFWwindow *window, GLuint programID, GLuint object, GLuint colorObjec
   );
 
   // Draw the triangle !
-  cout << qttFragmentObjects;
   glDrawArrays(GL_TRIANGLES, 0, qttFragmentObjects*3);
 
   glDisableVertexAttribArray(position_attrib_object);
@@ -386,8 +385,14 @@ void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 MVP, GLuint ob
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+  // Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+
   do
   {
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
 		glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
