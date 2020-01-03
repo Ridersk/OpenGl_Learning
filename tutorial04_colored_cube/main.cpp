@@ -20,6 +20,41 @@ static const char TITLE[50] = "Tutorial 01";
 
 int qttFragmentObjects = 0;
 
+void addHints();
+GLFWwindow *openWindow();
+GLFWwindow *openWindow();
+void createOpenGlContext(GLFWwindow *window);
+void createWindow(GLFWwindow **window, GLuint *vertexArrayId);
+void addInputs(GLFWwindow *window);
+void defineVertexArray(GLuint *VertexArrayID);
+void createObjects(GLuint *objects, GLuint *colorObjects);
+void loadShaders(GLuint *programID);
+void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp);
+void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
+void createCube(GLuint *object, GLuint *colorObject);
+void swapBuffers(GLFWwindow *window);
+void draw(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID);
+void run(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID, GLuint mvpId, mat4 MVP);
+
+int main()
+{
+  GLFWwindow *window;
+  GLuint programID;
+  GLuint mvpId;
+  GLuint vertexArrayID; // basis to use vertices (points of objects)
+  GLuint object;
+  GLuint colorObject;
+  mat4 mvp;
+
+  createWindow(&window, &vertexArrayID);
+  addInputs(window);
+  loadShaders(&programID);
+  setPerspective(&programID, &mvpId, &mvp);
+  createObjects(&object, &colorObject);
+  run(window, object, colorObject, programID, mvpId, mvp);
+  return 0;
+}
+
 void addHints()
 {
   glfwWindowHint(GLFW_SAMPLES, 4);               // 4x antialiasing
@@ -55,6 +90,21 @@ void createOpenGlContext(GLFWwindow *window)
   }
 }
 
+void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
+{
+  glewExperimental = true;
+
+  if (!glfwInit())
+  {
+    fprintf(stderr, "Failed to initialize GLFW\n");
+  }
+
+  addHints();
+  *window = openWindow();
+  createOpenGlContext(*window);
+  defineVertexArray(vertexArrayId);
+}
+
 void addInputs(GLFWwindow *window)
 {
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
@@ -64,174 +114,6 @@ void defineVertexArray(GLuint *VertexArrayID)
 {
   glGenVertexArrays(1, VertexArrayID);
   glBindVertexArray(*VertexArrayID);
-}
-
-void addFragmentObject(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints) {
-  int dimensions = 3;
-  for(int i = 0; i < dimensions * qttPoints; i++) {
-    objectVertices->push_back(object[i]);
-  }
-
-  qttFragmentObjects++;
-}
-
-void createCube(GLuint *object)
-{
-  GLfloat triangle1[] = {
-    -1.0f, -1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    0.0f, 1.0f, 0.0f
-  };
-
-  GLfloat triangle2[] = {
-    1.0f, 1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f
-  };
-
-  GLfloat triangle3[] = {
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f
-  };
-
-  GLfloat triangle4[] = {
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f
-  };
-
-  GLfloat triangle5[] = {
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f
-  };
-
-  GLfloat triangle6[] = {
-    1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f
-  };
-
-  GLfloat triangle7[] = {
-    -1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
-  };
-
-  GLfloat triangle8[] = {
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f
-  };
-
-  GLfloat triangle9[] = {
-    1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
-  };
-
-  GLfloat triangle10[] = {
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f
-  };
-
-  GLfloat triangle11[] = {
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f
-  };
-
-  GLfloat triangle12[] = {
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f
-  };
-
-
-
-  vector<GLfloat> objectVertices;
-
-  addFragmentObject(&objectVertices, triangle1, 3);
-  addFragmentObject(&objectVertices, triangle2, 3);
-  addFragmentObject(&objectVertices, triangle3, 3);
-  addFragmentObject(&objectVertices, triangle4, 3);
-  addFragmentObject(&objectVertices, triangle5, 3);
-  addFragmentObject(&objectVertices, triangle6, 3);
-  addFragmentObject(&objectVertices, triangle7, 3);
-  addFragmentObject(&objectVertices, triangle8, 3);
-  addFragmentObject(&objectVertices, triangle9, 3);
-  addFragmentObject(&objectVertices, triangle10, 3);
-  addFragmentObject(&objectVertices, triangle11, 3);
-  addFragmentObject(&objectVertices, triangle12, 3);
-
-  glGenBuffers(1, object);
-  glBindBuffer(GL_ARRAY_BUFFER, *object);
-  glBufferData(
-      GL_ARRAY_BUFFER,
-      objectVertices.size() * sizeof(GLfloat),
-      static_cast<void*>(objectVertices.data()), GL_STATIC_DRAW);
-}
-
-void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
-{
-  addHints();
-  *window = openWindow();
-  createOpenGlContext(*window);
-  defineVertexArray(vertexArrayId);
-}
-
-void createObjects(vector<GLuint> *objects) {
-  GLuint object;
-  createCube(&object);
-
-  objects->push_back(object);
-}
-
-// RUN
-
-void swapBuffers(GLFWwindow *window)
-{
-  glfwSwapBuffers(window);
-  glfwPollEvents();
-}
-
-void draw(GLFWwindow *window, vector<GLuint> objects, GLuint programID)
-{
-  GLint position_attrib = glGetAttribLocation(
-    programID, "vertexPosition_modelspace");
-  GLint pointDimensions = 3;
-  
-
-  glEnableVertexAttribArray(position_attrib);
-  glVertexAttribPointer(
-      position_attrib,        // shader in  MyVertexShader.lma (layout(location = 0))
-      pointDimensions,        // size
-      GL_FLOAT, // type
-      GL_FALSE, // normalization
-      0,        // stride
-      (void *)0 // array buffer offset
-  );
-  glDrawArrays(GL_TRIANGLES, 0, qttFragmentObjects*3);
-  glDisableVertexAttribArray(0);
-}
-
-void run(GLFWwindow *window, vector<GLuint> objects, GLuint programID, GLuint mvpId, mat4 MVP)
-{
-
-  // Dark blue background
-  glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-
-  do
-  {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram(programID); // use my program
-		glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
-    draw(window, objects, programID);
-    swapBuffers(window);
-  } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0);
 }
 
 void loadShaders(GLuint *programID)
@@ -261,28 +143,256 @@ void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp) {
   *mvp = Projection * View * Model;
 }
 
-int main()
-{
-  GLFWwindow *window;
-  GLuint programID;
-  GLuint mvpId;
-  GLuint vertexArrayID; // basis to use vertices (points of objects)
-  vector<GLuint> objects;
-  mat4 mvp;
+void createObjects(GLuint *object, GLuint *colorObject) {
+  
+  createCube(object, colorObject);
+}
 
+void createBuffer(GLuint *buffer, vector<GLfloat> bufferData) {
+  glGenBuffers(1, buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, *buffer);
+  glBufferData(
+      GL_ARRAY_BUFFER,
+      bufferData.size() * sizeof(GLfloat),
+      static_cast<void*>(bufferData.data()), GL_STATIC_DRAW);
+}
 
-  glewExperimental = true;
-
-  if (!glfwInit())
-  {
-    fprintf(stderr, "Failed to initialize GLFW\n");
+void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints) {
+  int dimensions = 3;
+  for(int i = 0; i < dimensions * qttPoints; i++) {
+    objectVertices->push_back(object[i]);
   }
 
-  createWindow(&window, &vertexArrayID);
-  addInputs(window);
-  loadShaders(&programID);
-  setPerspective(&programID, &mvpId, &mvp);
-  createObjects(&objects);
-  run(window, objects, programID, mvpId, mvp);
-  return 0;
+  qttFragmentObjects++;
+}
+
+void createCube(GLuint *object, GLuint *colorObject)
+{
+  vector<GLfloat> objectVerticesData;
+  vector<GLfloat> colorObjectsData;
+
+  GLfloat triangle1[] = {
+    -1.0f, -1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f
+  };
+  GLfloat colorTriangle1[] = {
+    0.583f,  0.771f,  0.014f,
+    0.609f,  0.115f,  0.436f,
+    0.327f,  0.483f,  0.844f,
+  };
+
+  GLfloat triangle2[] = {
+    1.0f, 1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f
+  };
+  GLfloat colorTriangle2[] = {
+    0.822f,  0.569f,  0.201f,
+    0.435f,  0.602f,  0.223f,
+    0.310f,  0.747f,  0.185f,
+  };
+
+  GLfloat triangle3[] = {
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f
+  };
+  GLfloat colorTriangle3[] = {
+    0.597f,  0.770f,  0.761f,
+    0.559f,  0.436f,  0.730f,
+    0.359f,  0.583f,  0.152f,
+  };
+
+  GLfloat triangle4[] = {
+    1.0f, 1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f
+  };
+  GLfloat colorTriangle4[] = {
+    0.483f,  0.596f,  0.789f,
+    0.559f,  0.861f,  0.639f,
+    0.195f,  0.548f,  0.859f,
+  };
+
+  GLfloat triangle5[] = {
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f
+  };
+  GLfloat colorTriangle5[] = {
+     0.014f,  0.184f,  0.576f,
+    0.771f,  0.328f,  0.970f,
+    0.406f,  0.615f,  0.116f,
+  };
+
+  GLfloat triangle6[] = {
+    1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f
+  };
+  GLfloat colorTriangle6[] = {
+    0.676f,  0.977f,  0.133f,
+    0.971f,  0.572f,  0.833f,
+    0.140f,  0.616f,  0.489f,
+  };
+
+  GLfloat triangle7[] = {
+    -1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+  };
+  GLfloat colorTriangle7[] = {
+    0.997f,  0.513f,  0.064f,
+    0.945f,  0.719f,  0.592f,
+    0.543f,  0.021f,  0.978f,
+  };
+
+  GLfloat triangle8[] = {
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f
+  };
+  GLfloat colorTriangle8[] = {
+    0.279f,  0.317f,  0.505f,
+    0.167f,  0.620f,  0.077f,
+    0.347f,  0.857f,  0.137f,
+  };
+
+  GLfloat triangle9[] = {
+    1.0f,-1.0f,-1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+  };
+  GLfloat colorTriangle9[] = {
+    0.055f,  0.953f,  0.042f,
+    0.714f,  0.505f,  0.345f,
+    0.783f,  0.290f,  0.734f,
+  };
+
+  GLfloat triangle10[] = {
+    1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f
+  };
+  GLfloat colorTriangle10[] = {
+    0.722f,  0.645f,  0.174f,
+    0.302f,  0.455f,  0.848f,
+    0.225f,  0.587f,  0.040f,
+  };
+
+  GLfloat triangle11[] = {
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f
+  };
+  GLfloat colorTriangle11[] = {
+    0.517f,  0.713f,  0.338f,
+    0.053f,  0.959f,  0.120f,
+    0.393f,  0.621f,  0.362f,
+  };
+
+  GLfloat triangle12[] = {
+    1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f
+  };
+  GLfloat colorTriangle12[] = {
+    0.673f,  0.211f,  0.457f,
+    0.820f,  0.883f,  0.371f,
+    0.982f,  0.099f,  0.879f
+  };
+
+  extendVector(&objectVerticesData, triangle1, 3);
+  extendVector(&objectVerticesData, triangle2, 3);
+  extendVector(&objectVerticesData, triangle3, 3);
+  extendVector(&objectVerticesData, triangle4, 3);
+  extendVector(&objectVerticesData, triangle5, 3);
+  extendVector(&objectVerticesData, triangle6, 3);
+  extendVector(&objectVerticesData, triangle7, 3);
+  extendVector(&objectVerticesData, triangle8, 3);
+  extendVector(&objectVerticesData, triangle9, 3);
+  extendVector(&objectVerticesData, triangle10, 3);
+  extendVector(&objectVerticesData, triangle11, 3);
+  extendVector(&objectVerticesData, triangle12, 3);
+
+  extendVector(&colorObjectsData, colorTriangle1, 3);
+  extendVector(&colorObjectsData, colorTriangle2, 3);
+  extendVector(&colorObjectsData, colorTriangle3, 3);
+  extendVector(&colorObjectsData, colorTriangle4, 3);
+  extendVector(&colorObjectsData, colorTriangle5, 3);
+  extendVector(&colorObjectsData, colorTriangle6, 3);
+  extendVector(&colorObjectsData, colorTriangle7, 3);
+  extendVector(&colorObjectsData, colorTriangle8, 3);
+  extendVector(&colorObjectsData, colorTriangle9, 3);
+  extendVector(&colorObjectsData, colorTriangle10, 3);
+  extendVector(&colorObjectsData, colorTriangle11, 3);
+  extendVector(&colorObjectsData, colorTriangle12, 3);
+
+  // vertices
+  createBuffer(object, objectVerticesData);
+  // colors
+  createBuffer(colorObject, colorObjectsData);
+}
+
+void swapBuffers(GLFWwindow *window)
+{
+  glfwSwapBuffers(window);
+  glfwPollEvents();
+}
+
+void draw(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID)
+{
+  GLint position_attrib_object = glGetAttribLocation(
+    programID, "vertexPosition_modelspace");
+  GLint position_attrib_color = glGetAttribLocation(
+    programID, "vertexPosition_modelspace");
+  GLint pointDimensions = 3;
+  
+  // object vertex
+  glEnableVertexAttribArray(position_attrib_object);
+	glBindBuffer(GL_ARRAY_BUFFER, object);
+  glVertexAttribPointer(
+      position_attrib_object,        // shader in  MyVertexShader.lma (layout(location = 0))
+      pointDimensions,        // size
+      GL_FLOAT, // type
+      GL_FALSE, // normalization
+      0,        // stride
+      (void *)0 // array buffer offset
+  );
+
+  // color object
+  glEnableVertexAttribArray(position_attrib_color);
+  glBindBuffer(GL_ARRAY_BUFFER, colorObject);
+  glVertexAttribPointer(
+      position_attrib_color,        // shader in  MyVertexShader.lma (layout(location = 0))
+      pointDimensions,        // size
+      GL_FLOAT, // type
+      GL_FALSE, // normalization
+      0,        // stride
+      (void *)0 // array buffer offset
+  );
+
+  // Draw the triangle !
+  glDrawArrays(GL_TRIANGLES, 0, 12*3);
+
+  glDisableVertexAttribArray(position_attrib_object);
+  glDisableVertexAttribArray(position_attrib_color);
+}
+
+void run(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID, GLuint mvpId, mat4 MVP)
+{
+
+  // Dark blue background
+  glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+
+  do
+  {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(programID); // use my program
+		glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
+    draw(window, object, colorObject, programID);
+    swapBuffers(window);
+  } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+           glfwWindowShouldClose(window) == 0);
 }

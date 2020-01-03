@@ -69,12 +69,6 @@ void draw(GLFWwindow *window)
 {
 }
 
-bool runCondition(GLFWwindow *window)
-{
-  return glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-         glfwWindowShouldClose(window) == 0;
-}
-
 void run(GLFWwindow *window)
 {
   do
