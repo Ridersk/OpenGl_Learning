@@ -18,8 +18,6 @@ static const int WINDOW_WIDTH = 1366;
 static const int WINDOW_HEIGHT = 768;
 static const char TITLE[50] = "Tutorial 01";
 
-int qttFragmentObjects = 0;
-
 void addHints();
 GLFWwindow *openWindow();
 GLFWwindow *openWindow();
@@ -27,14 +25,14 @@ void createOpenGlContext(GLFWwindow *window);
 void createWindow(GLFWwindow **window, GLuint *vertexArrayId);
 void addInputs(GLFWwindow *window);
 void defineVertexArray(GLuint *VertexArrayID);
-void createObjects(GLuint *objects, GLuint *colorObjects);
+void createObjects(GLuint *object, GLuint *colorObject, int *qttFragmentObjects);
 void loadShaders(GLuint *programID);
 void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp);
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
-void createCube(GLuint *object, GLuint *colorObject);
+void createCube(GLuint *object, GLuint *colorObject, int *qttFragmentObjects);
 void swapBuffers(GLFWwindow *window);
-void draw(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID);
-void run(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID, GLuint mvpId, mat4 MVP);
+void draw(GLFWwindow *window, GLuint programID, GLuint object, GLuint colorObject, int qttFragmentObjects);
+void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 MVP, GLuint object, GLuint colorObject, int qttFragmentObjects);
 
 int main()
 {
@@ -44,14 +42,15 @@ int main()
   GLuint vertexArrayID; // basis to use vertices (points of objects)
   GLuint object;
   GLuint colorObject;
+  int qttFragmentObjects;
   mat4 mvp;
 
   createWindow(&window, &vertexArrayID);
   addInputs(window);
   loadShaders(&programID);
   setPerspective(&programID, &mvpId, &mvp);
-  createObjects(&object, &colorObject);
-  run(window, object, colorObject, programID, mvpId, mvp);
+  createObjects(&object, &colorObject, &qttFragmentObjects);
+  run(window, programID, mvpId, mvp, object, colorObject, qttFragmentObjects);
   return 0;
 }
 
@@ -143,9 +142,9 @@ void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp) {
   *mvp = Projection * View * Model;
 }
 
-void createObjects(GLuint *object, GLuint *colorObject) {
+void createObjects(GLuint *object, GLuint *colorObject, int *qttFragmentObjects) {
   
-  createCube(object, colorObject);
+  createCube(object, colorObject, qttFragmentObjects);
 }
 
 void createBuffer(GLuint *buffer, vector<GLfloat> bufferData) {
@@ -162,11 +161,9 @@ void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoint
   for(int i = 0; i < dimensions * qttPoints; i++) {
     objectVertices->push_back(object[i]);
   }
-
-  qttFragmentObjects++;
 }
 
-void createCube(GLuint *object, GLuint *colorObject)
+void createCube(GLuint *object, GLuint *colorObject, int *qttFragmentObjects)
 {
   vector<GLfloat> objectVerticesData;
   vector<GLfloat> colorObjectsData;
@@ -333,6 +330,8 @@ void createCube(GLuint *object, GLuint *colorObject)
   createBuffer(object, objectVerticesData);
   // colors
   createBuffer(colorObject, colorObjectsData);
+
+  *qttFragmentObjects = 12;
 }
 
 void swapBuffers(GLFWwindow *window)
@@ -341,12 +340,12 @@ void swapBuffers(GLFWwindow *window)
   glfwPollEvents();
 }
 
-void draw(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID)
+void draw(GLFWwindow *window, GLuint programID, GLuint object, GLuint colorObject, int qttFragmentObjects)
 {
   GLint position_attrib_object = glGetAttribLocation(
     programID, "vertexPosition_modelspace");
   GLint position_attrib_color = glGetAttribLocation(
-    programID, "vertexPosition_modelspace");
+    programID, "vertexColor");
   GLint pointDimensions = 3;
   
   // object vertex
@@ -374,13 +373,14 @@ void draw(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programI
   );
 
   // Draw the triangle !
-  glDrawArrays(GL_TRIANGLES, 0, 12*3);
+  cout << qttFragmentObjects;
+  glDrawArrays(GL_TRIANGLES, 0, qttFragmentObjects*3);
 
   glDisableVertexAttribArray(position_attrib_object);
   glDisableVertexAttribArray(position_attrib_color);
 }
 
-void run(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID, GLuint mvpId, mat4 MVP)
+void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 MVP, GLuint object, GLuint colorObject, int qttFragmentObjects)
 {
 
   // Dark blue background
@@ -391,7 +391,7 @@ void run(GLFWwindow *window, GLuint object, GLuint colorObject, GLuint programID
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
 		glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
-    draw(window, object, colorObject, programID);
+    draw(window, programID, object, colorObject, qttFragmentObjects);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0);
