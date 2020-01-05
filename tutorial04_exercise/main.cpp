@@ -133,9 +133,9 @@ void addObjectPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4
 
   // View: Camera matrix
   mat4 View = lookAt(
-      vec3(4, 3, 3), // Camera position
-      vec3(0, 0, 0),
-      vec3(0, 1, 0) // Head is up
+      vec3(10, 3, 0), // Camera position (z, y, x)
+      vec3(-5, 0, 0), // Camera focus (z, y, x)
+      vec3(0, 1, 0)   // Head is up
   );
 
   // Model matrix
