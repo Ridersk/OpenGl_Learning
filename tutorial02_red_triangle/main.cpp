@@ -68,8 +68,7 @@ void createObject(GLuint *object)
   static const GLfloat objectVertices[] = {
       -1.0f, -1.0f, 0.0f,
       1.0f, -1.0f, 0.0f,
-      0.0f, 1.0f, 0.0f,
-  };
+      0.0f, 1.0f, 0.0f};
 
   glGenBuffers(1, object);
   glBindBuffer(GL_ARRAY_BUFFER, *object);
@@ -87,7 +86,8 @@ void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
   defineVertexArray(vertexArrayId);
 }
 
-void createObjects(GLuint *objects) {
+void createObjects(GLuint *objects)
+{
   GLuint object;
 
   createObject(&object);
@@ -104,17 +104,17 @@ void swapBuffers(GLFWwindow *window)
 void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
 {
   GLint position_attrib = glGetAttribLocation(
-    programID, "vertexPosition_modelspace");
+      programID, "vertexPosition_modelspace");
   GLint pointDimensions = 3;
 
   glEnableVertexAttribArray(position_attrib);
   glVertexAttribPointer(
-      position_attrib,        // shader in  MyVertexShader.lvet (layout(location = 0))
-      pointDimensions,        // qtt of floats that defines a point
-      GL_FLOAT, // type
-      GL_FALSE, // normalization
-      0,        // stride
-      (void *) 0 // array buffer offset
+      position_attrib, // shader in  MyVertexShader.lvet (layout(location = 0))
+      pointDimensions, // qtt of floats that defines a point
+      GL_FLOAT,        // type
+      GL_FALSE,        // normalization
+      0,               // stride
+      (void *)0        // array buffer offset
   );
 
   glDrawArrays(GL_TRIANGLES, 0, 3); // parameters (type, firstIndexArray, number of points)

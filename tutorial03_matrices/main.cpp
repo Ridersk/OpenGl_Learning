@@ -70,8 +70,7 @@ void createObject(GLuint *object)
   static const GLfloat objectVertices[] = {
       -1.0f, -1.0f, 0.0f,
       1.0f, -1.0f, 0.0f,
-      0.0f, 1.0f, 0.0f,
-  };
+      0.0f, 1.0f, 0.0f};
 
   glGenBuffers(1, object);
   glBindBuffer(GL_ARRAY_BUFFER, *object);
@@ -88,10 +87,10 @@ void createWindow(GLFWwindow **window, GLuint *vertexArrayId)
   *window = openWindow();
   createOpenGlContext(*window);
   defineVertexArray(vertexArrayId);
-
 }
 
-void createObjects(GLuint *objects) {
+void createObjects(GLuint *objects)
+{
   GLuint object;
 
   createObject(&object);
@@ -108,18 +107,17 @@ void swapBuffers(GLFWwindow *window)
 void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
 {
   GLint position_attrib = glGetAttribLocation(
-    programID, "vertexPosition_modelspace");
+      programID, "vertexPosition_modelspace");
   GLint pointDimensions = 3;
-  
 
   glEnableVertexAttribArray(position_attrib);
   glVertexAttribPointer(
-      position_attrib,        // shader in  MyVertexShader.lma (layout(location = 0))
-      pointDimensions,        // size
-      GL_FLOAT, // type
-      GL_FALSE, // normalization
-      0,        // stride
-      (void *)0 // array buffer offset
+      position_attrib, // shader in  MyVertexShader.lma (layout(location = 0))
+      pointDimensions, // size
+      GL_FLOAT,        // type
+      GL_FALSE,        // normalization
+      0,               // stride
+      (void *)0        // array buffer offset
   );
   glDrawArrays(GL_TRIANGLES, 0, 3);
   glDisableVertexAttribArray(0);
@@ -135,7 +133,7 @@ void run(GLFWwindow *window, GLuint *objects, GLuint programID, GLuint mvpId, ma
   {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
-		glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(mvpId, 1, GL_FALSE, &MVP[0][0]);
     draw(window, objects, programID);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
@@ -147,19 +145,20 @@ void loadShaders(GLuint *programID)
   *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
 }
 
-void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp) {
+void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp)
+{
   // Get a handle for our "MVP" uniform
   // Only during the initialisation
   *MatrixID = glGetUniformLocation(*programID, "MVP");
 
   // Screen Projection, 45° Field of View
-  mat4 Projection = perspective(radians(45.0f), (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
+  mat4 Projection = perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
   // View: Camera matrix
   mat4 View = lookAt(
-    vec3(4, 3, 3), // Camera position
-    vec3(0, 0, 0),
-    vec3(0, 1, 0) // Head is up
+      vec3(4, 3, 3), // Camera position
+      vec3(0, 0, 0),
+      vec3(0, 1, 0) // Head is up
   );
 
   // Model matrix
@@ -177,7 +176,6 @@ int main()
   GLuint vertexArrayID; // basis to use vertices (points of objects)
   GLuint objects[5];
   mat4 mvp;
-
 
   glewExperimental = true;
 
