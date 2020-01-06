@@ -36,6 +36,8 @@ void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLu
 void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, int qttObjectFragments, GLint posAttrShaderObject, GLint posAttrShaderColor);
 GLuint createCube(vector<int> *qttObjectsFragments);
 GLuint createCubeColor();
+GLuint createPyramid(vector<int> *qttObjectsFragments);
+GLuint createPyramidColor();
 
 int main()
 {
@@ -133,13 +135,14 @@ void addObjectPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4
 
   // View: Camera matrix
   mat4 View = lookAt(
-      vec3(10, 3, 0), // Camera position (z, y, x)
-      vec3(-5, 0, 0), // Camera focus (z, y, x)
+      vec3(10, 3, 3), // Camera position (z, y, x)
+      vec3(0, 0, 0),  // Camera focus (z, y, x)
       vec3(0, 1, 0)   // Head is up
   );
 
   // Model matrix
-  mat4 Model = mat4(1.0f);
+  mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+  mat4 Model = translationMatrix * mat4(1.0f); // model matix can to be Translation * Rotation * Scale
 
   // ModelViewProjection
   mat4 mvpgenerated = Projection * View * Model;
@@ -150,8 +153,14 @@ void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps
                    vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments)
 {
   // Cube
-  objectIds->push_back(createCube(qttObjectsFragments));
-  objectColorIds->push_back(createCubeColor());
+  // objectIds->push_back(createCube(qttObjectsFragments));
+  // objectColorIds->push_back(createCubeColor());
+
+  // Pyramid
+  objectIds->push_back(createPyramid(qttObjectsFragments));
+  objectColorIds->push_back(createPyramidColor());
+
+  // Perspective
   addObjectPerspective(programID, mvpIds, mvps);
 }
 
@@ -257,6 +266,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, i
   glDisableVertexAttribArray(posAttrShaderColor);
 }
 
+// Data Objects
 GLuint createCube(vector<int> *qttObjectsFragments)
 {
   vector<GLfloat> objectVerticesData;
@@ -323,12 +333,52 @@ GLuint createCube(vector<int> *qttObjectsFragments)
   extendVector(&objectVerticesData, triangle11, 3);
   extendVector(&objectVerticesData, triangle12, 3);
 
-  qttObjectsFragments->push_back(12);
+  qttObjectsFragments->push_back(objectVerticesData.size());
 
   return (createObjectBuffer(objectVerticesData));
 }
 
-// Data Objects
+GLuint createPyramid(vector<int> *qttObjectsFragments)
+{
+  vector<GLfloat> objectVerticesData;
+
+  GLfloat triangle1[] = {
+      -1.0f, 0.0f, 0.0f,
+      1.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, -0.5f};
+  GLfloat triangle2[] = {
+      -1.0f, 0.0f, 0.0f,
+      -1.0f, 0.0f, -1.0f,
+      0.0f, 1.0f, -0.5f};
+  GLfloat triangle3[] = {
+      1.0f, 0.0f, 0.0f,
+      1.0f, 0.0f, -1.0f,
+      0.0f, 1.0f, -0.5f};
+  GLfloat triangle4[] = {
+      -1.0f, 0.0f, -1.0f,
+      1.0f, 0.0f, -1.0f,
+      0.0f, 1.0f, -0.5f};
+  GLfloat triangle5[] = {
+      -1.0f, 0.0f, 0.0f,
+      1.0f, 0.0f, 0.0f,
+      -1.0f, 0.0f, -1.0f};
+  GLfloat triangle6[] = {
+      1.0f, 0.0f, 0.0f,
+      1.0f, 0.0f, -1.0f,
+      -1.0f, 0.0f, -1.0f};
+
+  extendVector(&objectVerticesData, triangle1, 3);
+  extendVector(&objectVerticesData, triangle2, 3);
+  extendVector(&objectVerticesData, triangle3, 3);
+  extendVector(&objectVerticesData, triangle4, 3);
+  extendVector(&objectVerticesData, triangle5, 3);
+  extendVector(&objectVerticesData, triangle6, 3);
+
+  qttObjectsFragments->push_back(objectVerticesData.size());
+
+  return (createObjectBuffer(objectVerticesData));
+}
+
 GLuint createCubeColor()
 {
   vector<GLfloat> objectColorData;
@@ -394,6 +444,21 @@ GLuint createCubeColor()
   extendVector(&objectColorData, colorTriangle10, 3);
   extendVector(&objectColorData, colorTriangle11, 3);
   extendVector(&objectColorData, colorTriangle12, 3);
+
+  return (createObjectBuffer(objectColorData));
+}
+
+GLuint createPyramidColor()
+{
+  int qttFragments = 6;
+  vector<GLfloat> objectColorData;
+
+  for (int i = 0; i < qttFragments * 3; i++)
+  {
+    objectColorData.push_back(0.5f); // Red
+    objectColorData.push_back(0.0f); // Green
+    objectColorData.push_back(0.0f); // Blue
+  }
 
   return (createObjectBuffer(objectColorData));
 }
