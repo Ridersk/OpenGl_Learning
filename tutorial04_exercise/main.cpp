@@ -28,7 +28,6 @@ void defineVertexArray(GLuint *VertexArrayID);
 void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds, vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments);
 GLuint createObjectBuffer(vector<GLfloat> bufferData);
 void loadShaders(GLuint *programID);
-void addObjectPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps);
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
 void swapBuffers(GLFWwindow *window);
 void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectColorIds, vector<int> qttObjectsFragments);
@@ -36,8 +35,10 @@ void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLu
 void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, int qttObjectFragments, GLint posAttrShaderObject, GLint posAttrShaderColor);
 GLuint createCube(vector<int> *qttObjectsFragments);
 GLuint createCubeColor();
+void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps);
 GLuint createPyramid(vector<int> *qttObjectsFragments);
 GLuint createPyramidColor();
+void addPyramidPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps);
 
 int main()
 {
@@ -124,44 +125,18 @@ void loadShaders(GLuint *programID)
   *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
 }
 
-void addObjectPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
-{
-  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
-  // Only during the initialisation
-  mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
-
-  // Screen Projection, 45° Field of View
-  mat4 Projection = perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-  // View: Camera matrix
-  mat4 View = lookAt(
-      vec3(10, 3, 3), // Camera position (z, y, x)
-      vec3(0, 0, 0),  // Camera focus (z, y, x)
-      vec3(0, 1, 0)   // Head is up
-  );
-
-  // Model matrix
-  mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
-  mat4 Model = translationMatrix * mat4(1.0f); // model matix can to be Translation * Rotation * Scale
-
-  // ModelViewProjection
-  mat4 mvpgenerated = Projection * View * Model;
-  mvps->push_back(mvpgenerated);
-}
-
 void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds,
                    vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments)
 {
   // Cube
-  // objectIds->push_back(createCube(qttObjectsFragments));
-  // objectColorIds->push_back(createCubeColor());
+  objectIds->push_back(createCube(qttObjectsFragments));
+  objectColorIds->push_back(createCubeColor());
+  addCubePerspective(programID, mvpIds, mvps);
 
   // Pyramid
   objectIds->push_back(createPyramid(qttObjectsFragments));
   objectColorIds->push_back(createPyramidColor());
-
-  // Perspective
-  addObjectPerspective(programID, mvpIds, mvps);
+  addPyramidPerspective(programID, mvpIds, mvps);
 }
 
 GLuint createObjectBuffer(vector<GLfloat> bufferData)
@@ -461,4 +436,54 @@ GLuint createPyramidColor()
   }
 
   return (createObjectBuffer(objectColorData));
+}
+
+void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
+{
+  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Only during the initialisation
+  mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
+
+  // Screen Projection, 45° Field of View
+  mat4 Projection = perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+  // View: Camera matrix
+  mat4 View = lookAt(
+      vec3(10, 3, 3), // Camera position (z, y, x)
+      vec3(0, 0, 0),  // Camera focus (z, y, x)
+      vec3(0, 1, 0)   // Head is up
+  );
+
+  // Model matrix
+  mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+  mat4 Model = translationMatrix * mat4(1.0f); // model matix can to be Translation * Rotation * Scale
+
+  // ModelViewProjection
+  mat4 mvpgenerated = Projection * View * Model;
+  mvps->push_back(mvpgenerated);
+}
+
+void addPyramidPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
+{
+  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Only during the initialisation
+  mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
+
+  // Screen Projection, 45° Field of View
+  mat4 Projection = perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+  // View: Camera matrix
+  mat4 View = lookAt(
+      vec3(10, 3, 3), // Camera position (z, y, x)
+      vec3(0, 0, 0),  // Camera focus (z, y, x)
+      vec3(0, 1, 0)   // Head is up
+  );
+
+  // Model matrix
+  mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f));
+  mat4 Model = translationMatrix * mat4(1.0f); // model matix can to be Translation * Rotation * Scale
+
+  // ModelViewProjection
+  mat4 mvpgenerated = Projection * View * Model;
+  mvps->push_back(mvpgenerated);
 }
