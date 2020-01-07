@@ -117,7 +117,7 @@ void defineVertexArray(GLuint *VertexArrayID)
 
 void loadShaders(GLuint *programID)
 {
-  *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
+  *programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 }
 
 void setPerspective(GLuint *programID, GLuint *MatrixID, mat4 *mvp)
@@ -333,7 +333,7 @@ void draw(GLFWwindow *window, GLuint programID, GLuint object, GLuint colorObjec
   glEnableVertexAttribArray(position_attrib_object);
   glBindBuffer(GL_ARRAY_BUFFER, object);
   glVertexAttribPointer(
-      position_attrib_object, // shader in  MyVertexShader.lma (layout(location = 0))
+      position_attrib_object, // shader in vertex shader file (layout(location = 0))
       pointDimensions,        // size
       GL_FLOAT,               // type
       GL_FALSE,               // normalization

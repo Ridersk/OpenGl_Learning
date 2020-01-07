@@ -109,7 +109,7 @@ void draw(GLFWwindow *window, GLuint *objects, GLuint programID)
 
   glEnableVertexAttribArray(position_attrib);
   glVertexAttribPointer(
-      position_attrib, // shader in  MyVertexShader.lvet (layout(location = 0))
+      position_attrib, // shader in vertex shader file (layout(location = 0))
       pointDimensions, // qtt of floats that defines a point
       GL_FLOAT,        // type
       GL_FALSE,        // normalization
@@ -139,7 +139,7 @@ void run(GLFWwindow *window, GLuint *objects, GLuint programID)
 
 void loadShaders(GLuint *programID)
 {
-  *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
+  *programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 }
 
 int main()

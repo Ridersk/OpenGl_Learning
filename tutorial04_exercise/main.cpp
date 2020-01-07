@@ -122,7 +122,7 @@ void defineVertexArray(GLuint *VertexArrayID)
 
 void loadShaders(GLuint *programID)
 {
-  *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
+  *programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 }
 
 void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds,
@@ -214,7 +214,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, i
   glEnableVertexAttribArray(posAttrShaderObject);
   glBindBuffer(GL_ARRAY_BUFFER, objectId);
   glVertexAttribPointer(
-      posAttrShaderObject, // shader in  MyVertexShader.lma (layout(location = 0))
+      posAttrShaderObject, // shader in vertex shader file (layout(location = 0))
       3,                   // dimensions
       GL_FLOAT,            // type
       GL_FALSE,            // normalization
