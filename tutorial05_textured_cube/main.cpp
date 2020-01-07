@@ -25,15 +25,16 @@ void createOpenGlContext(GLFWwindow *window);
 void createWindow(GLFWwindow **window, GLuint *vertexArrayId);
 void addInputs(GLFWwindow *window);
 void defineVertexArray(GLuint *VertexArrayID);
-void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds, vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments);
 GLuint createObjectBuffer(vector<GLfloat> bufferData);
+GLuint createObjectTexture(int width, int height, unsigned char *data);
+void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds, vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments);
 void loadShaders(GLuint *programID);
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
 void swapBuffers(GLFWwindow *window);
 void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectColorIds, vector<int> qttObjectsFragments);
 void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectColorIds, vector<int> qttObjectsFragments);
 void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, int qttObjectFragments, GLint posAttrShaderObject, GLint posAttrShaderColor);
-unsigned char *loadBMPFile(const char *imagepath);
+GLuint loadBMPFile(const char *imagepath);
 GLuint createCube(vector<int> *qttObjectsFragments);
 GLuint createCubeColor();
 GLuint createCubeTexture();
@@ -124,16 +125,6 @@ void loadShaders(GLuint *programID)
   *programID = LoadShaders("MyVertexShader.lvet", "MyFragmentShader.lfrag");
 }
 
-void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds,
-                   vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments)
-{
-  // Cube
-  objectIds->push_back(createCube(qttObjectsFragments));
-  objectColorIds->push_back(createCubeColor());
-  createCubeTexture();
-  addCubePerspective(programID, mvpIds, mvps);
-}
-
 GLuint createObjectBuffer(vector<GLfloat> bufferData)
 {
   GLuint bufferId;
@@ -144,6 +135,31 @@ GLuint createObjectBuffer(vector<GLfloat> bufferData)
       bufferData.size() * sizeof(GLfloat),
       static_cast<void *>(bufferData.data()), GL_STATIC_DRAW);
   return bufferId;
+}
+
+GLuint createObjectTexture(int width, int height, unsigned char *data)
+{
+  // Create texture
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
+               0, GL_BGR, GL_UNSIGNED_BYTE, data);
+  glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                      GL_NEAREST);
+  glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                      GL_NEAREST);
+  return textureId;
+}
+
+void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds,
+                   vector<GLuint> *objectColorIds, vector<int> *qttObjectsFragments)
+{
+  // Cube
+  objectIds->push_back(createCube(qttObjectsFragments));
+  objectColorIds->push_back(createCubeColor());
+  createCubeTexture();
+  addCubePerspective(programID, mvpIds, mvps);
 }
 
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints)
@@ -236,7 +252,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, i
   glDisableVertexAttribArray(posAttrShaderColor);
 }
 
-unsigned char *loadBMPFile(const char *imagepath)
+GLuint loadBMPFile(const char *imagepath)
 {
   unsigned char header[54];
   unsigned int dataPos;
@@ -283,7 +299,7 @@ unsigned char *loadBMPFile(const char *imagepath)
 
   fclose(file);
 
-  return data;
+  return createObjectTexture(width, height, data);
 }
 
 // Data Objects
@@ -455,7 +471,8 @@ void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> 
 GLuint createCubeTexture()
 {
   // Open the file
-  unsigned char *image = loadBMPFile("./my_texture.bmp");
+  cout << "Loading texture" << endl;
+  GLuint texture = loadBMPFile("./my_texture.bmp");
 
   return 1;
 }
