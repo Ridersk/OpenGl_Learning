@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../common/shader.hpp"
+#include "../common/texture.hpp"
 
 using namespace std;
 using namespace glm;
@@ -26,15 +27,13 @@ void createWindow(GLFWwindow **window, GLuint *vertexArrayId);
 void addInputs(GLFWwindow *window);
 void defineVertexArray(GLuint *VertexArrayID);
 GLuint createObjectBuffer(vector<GLfloat> bufferData);
-GLuint createObjectTexture(unsigned int width, unsigned int height, unsigned char *data);
-void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds , vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments);
+void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds, vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments);
 void loadShaders(GLuint *programID);
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
 void swapBuffers(GLFWwindow *window);
 void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
 void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
 void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId, GLuint objectUvId, int qttObjectFragments, GLint attrShaderObject, GLint attrShaderTexture, GLint attrShaderUv);
-GLuint loadBMPFile(const char *imagepath);
 GLuint createCube(vector<int> *qttObjectsFragments);
 GLuint createCubeTexture();
 GLuint createCubeUV();
@@ -59,11 +58,11 @@ int main()
   run(window, programID, mvpIds, mvps, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
 
   // Cleanup VBO and shader
-	glDeleteProgram(programID);
-	glDeleteVertexArrays(1, &vertexArrayID);
+  glDeleteProgram(programID);
+  glDeleteVertexArrays(1, &vertexArrayID);
 
-	// Close OpenGL window and terminate GLFW
-	glfwTerminate();
+  // Close OpenGL window and terminate GLFW
+  glfwTerminate();
   return 0;
 }
 
@@ -145,28 +144,9 @@ GLuint createObjectBuffer(vector<GLfloat> bufferData)
   return bufferId;
 }
 
-GLuint createObjectTexture(unsigned int width, unsigned int height, unsigned char *data)
-{
-  // Create texture
-  GLuint textureId;
-  glGenTextures(1, &textureId);
-  glBindTexture(GL_TEXTURE_2D, textureId);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height,
-               0, GL_BGR, GL_UNSIGNED_BYTE, data);
-  delete[] data;
-  // ... nice trilinear filtering ...
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  // ... which requires mipmaps. Generate them automatically.
-	glGenerateMipmap(GL_TEXTURE_2D);
-  return textureId;
-}
-
 void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps,
-                  vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds ,
-                  vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments)
+                   vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds,
+                   vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments)
 {
   // Cube
   objectIds->push_back(createCube(qttObjectsFragments));
@@ -191,8 +171,8 @@ void swapBuffers(GLFWwindow *window)
 }
 
 void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
-        vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds,
-        vector<int> qttObjectsFragments)
+         vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds,
+         vector<int> qttObjectsFragments)
 {
 
   // Dark blue background
@@ -215,8 +195,8 @@ void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat
 }
 
 void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
-        vector<GLuint> objectIds, vector<GLuint> objectTextureIds,
-        vector<GLuint> objectUvIds, vector<int> qttObjectsFragments)
+          vector<GLuint> objectIds, vector<GLuint> objectTextureIds,
+          vector<GLuint> objectUvIds, vector<int> qttObjectsFragments)
 {
   GLint attrShaderObject = glGetAttribLocation(
       programID, "vertexPosition_modelspace");
@@ -227,8 +207,8 @@ void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
   for (int objectMvpId = 0; objectMvpId < mvpIds.size(); objectMvpId++)
   {
     drawObject(mvpIds[objectMvpId], mvps[objectMvpId], objectIds[objectMvpId],
-              objectTextureIds[objectMvpId], objectUvIds[objectMvpId], qttObjectsFragments[objectMvpId],
-              attrShaderObject, attrShaderTexture, attrShaderUv);
+               objectTextureIds[objectMvpId], objectUvIds[objectMvpId], qttObjectsFragments[objectMvpId],
+               attrShaderObject, attrShaderTexture, attrShaderUv);
   }
 }
 
@@ -250,11 +230,11 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
   glBindBuffer(GL_ARRAY_BUFFER, objectId);
   glVertexAttribPointer(
       attrShaderObject, // shader in vertex shader file (layout(location = 0))
-      3,                   // dimensions
-      GL_FLOAT,            // type
-      GL_FALSE,            // normalization
-      0,                   // stride
-      (void *)0            // array buffer offset
+      3,                // dimensions
+      GL_FLOAT,         // type
+      GL_FALSE,         // normalization
+      0,                // stride
+      (void *)0         // array buffer offset
   );
 
   // UV Buffer
@@ -262,11 +242,11 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
   glBindBuffer(GL_ARRAY_BUFFER, objectUvId);
   glVertexAttribPointer(
       attrShaderUv, // shader in  MyVertexShader.lma (layout(location = 0))
-      2,                  // dimensions
-      GL_FLOAT,           // type
-      GL_FALSE,           // normalization
-      0,                  // stride
-      (void *)0           // array buffer offset
+      2,            // dimensions
+      GL_FLOAT,     // type
+      GL_FALSE,     // normalization
+      0,            // stride
+      (void *)0     // array buffer offset
   );
 
   // Draw the fragments(triangles) !
@@ -274,56 +254,6 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
 
   glDisableVertexAttribArray(attrShaderObject);
   glDisableVertexAttribArray(attrShaderUv);
-}
-
-GLuint loadBMPFile(const char *imagepath)
-{
-  unsigned char header[54];
-  unsigned int dataPos;
-  unsigned int width, height;
-  unsigned int imageSize;
-  unsigned char *data;
-
-  FILE *file = fopen(imagepath, "rb");
-  if (!file)
-  {
-    printf("Image could not be opened\n");
-    exit(0);
-  }
-
-  if (fread(header, 1, 54, file) != 54)
-  { // If not 54 bytes read : problem
-    printf("Not a correct BMP file\n");
-    exit(0);
-  }
-
-  if (header[0] != 'B' || header[1] != 'M')
-  {
-    printf("Not a correct BMP file\n");
-    exit(0);
-  }
-
-  // Read ints from the byte array
-  dataPos = *(int *)&(header[0x0A]);
-  imageSize = *(int *)&(header[0x22]);
-  width = *(int *)&(header[0x12]);
-  height = *(int *)&(header[0x16]);
-
-  // Fix some infos
-  if (imageSize == 0)
-    imageSize = width * height * 3; // 3: RGB
-  if (dataPos == 0)
-    dataPos = 54; // 54: Size of header
-
-  // Create a buffer
-  data = new unsigned char[imageSize];
-
-  // Read the actual data
-  fread(data, 1, imageSize, file);
-
-  fclose(file);
-
-  return createObjectTexture(width, height, data);
 }
 
 // Data Objects
@@ -398,10 +328,12 @@ GLuint createCube(vector<int> *qttObjectsFragments)
   return (createObjectBuffer(objectVerticesData));
 }
 
-GLuint createCubeTexture() {
+GLuint createCubeTexture()
+{
   // Open the file
   cout << "Loading texture" << endl;
-  GLuint textureId = loadBMPFile("./uvtemplate.bmp");
+  // GLuint textureId = loadBMPFile("./uvtemplate.bmp");
+  GLuint textureId = loadDDS("./uvtemplate.DDS");
 
   return textureId;
 }
@@ -411,57 +343,57 @@ GLuint createCubeUV()
   vector<GLfloat> objectTextureData;
 
   GLfloat colorTriangle1[] = {
-    0.000059f, 1.0f-0.000004f,
-    0.000103f, 1.0f-0.336048f,
-    0.335973f, 1.0f-0.335903f};
+      0.000059f, 1.0f - 0.000004f,
+      0.000103f, 1.0f - 0.336048f,
+      0.335973f, 1.0f - 0.335903f};
   GLfloat colorTriangle2[] = {
-    1.000023f, 1.0f-0.000013f,
-    0.667979f, 1.0f-0.335851f,
-    0.999958f, 1.0f-0.336064f};
+      1.000023f, 1.0f - 0.000013f,
+      0.667979f, 1.0f - 0.335851f,
+      0.999958f, 1.0f - 0.336064f};
   GLfloat colorTriangle3[] = {
-    0.667979f, 1.0f-0.335851f,
-    0.336024f, 1.0f-0.671877f,
-    0.667969f, 1.0f-0.671889f};
+      0.667979f, 1.0f - 0.335851f,
+      0.336024f, 1.0f - 0.671877f,
+      0.667969f, 1.0f - 0.671889f};
   GLfloat colorTriangle4[] = {
-    1.000023f, 1.0f-0.000013f,
-    0.668104f, 1.0f-0.000013f,
-    0.667979f, 1.0f-0.335851f};
+      1.000023f, 1.0f - 0.000013f,
+      0.668104f, 1.0f - 0.000013f,
+      0.667979f, 1.0f - 0.335851f};
   GLfloat colorTriangle5[] = {
-    0.000059f, 1.0f-0.000004f,
-    0.335973f, 1.0f-0.335903f,
-    0.336098f, 1.0f-0.000071f};
+      0.000059f, 1.0f - 0.000004f,
+      0.335973f, 1.0f - 0.335903f,
+      0.336098f, 1.0f - 0.000071f};
   GLfloat colorTriangle6[] = {
-    0.667979f, 1.0f-0.335851f,
-    0.335973f, 1.0f-0.335903f,
-    0.336024f, 1.0f-0.671877f};
+      0.667979f, 1.0f - 0.335851f,
+      0.335973f, 1.0f - 0.335903f,
+      0.336024f, 1.0f - 0.671877f};
   GLfloat colorTriangle7[] = {
-    1.000004f, 1.0f-0.671847f,
-    0.999958f, 1.0f-0.336064f,
-    0.667979f, 1.0f-0.335851f};
+      1.000004f, 1.0f - 0.671847f,
+      0.999958f, 1.0f - 0.336064f,
+      0.667979f, 1.0f - 0.335851f};
   GLfloat colorTriangle8[] = {
-    0.668104f, 1.0f-0.000013f,
-    0.335973f, 1.0f-0.335903f,
-    0.667979f, 1.0f-0.335851f};
+      0.668104f, 1.0f - 0.000013f,
+      0.335973f, 1.0f - 0.335903f,
+      0.667979f, 1.0f - 0.335851f};
   GLfloat colorTriangle9[] = {
-    0.335973f, 1.0f-0.335903f,
-    0.668104f, 1.0f-0.000013f,
-    0.336098f, 1.0f-0.000071f};
+      0.335973f, 1.0f - 0.335903f,
+      0.668104f, 1.0f - 0.000013f,
+      0.336098f, 1.0f - 0.000071f};
   GLfloat colorTriangle10[] = {
-    0.000103f, 1.0f-0.336048f,
-    0.000004f, 1.0f-0.671870f,
-    0.336024f, 1.0f-0.671877f};
+      0.000103f, 1.0f - 0.336048f,
+      0.000004f, 1.0f - 0.671870f,
+      0.336024f, 1.0f - 0.671877f};
   GLfloat colorTriangle11[] = {
-    0.000103f, 1.0f-0.336048f,
-    0.336024f, 1.0f-0.671877f,
-    0.335973f, 1.0f-0.335903f};
+      0.000103f, 1.0f - 0.336048f,
+      0.336024f, 1.0f - 0.671877f,
+      0.335973f, 1.0f - 0.335903f};
   GLfloat colorTriangle12[] = {
-    0.667969f, 1.0f-0.671889f,
-    1.000004f, 1.0f-0.671847f,
-    0.667979f, 1.0f-0.335851f};
+      0.667969f, 1.0f - 0.671889f,
+      1.000004f, 1.0f - 0.671847f,
+      0.667979f, 1.0f - 0.335851f};
 
   extendVector(&objectTextureData, colorTriangle1, 2);
   extendVector(&objectTextureData, colorTriangle2, 2);
-  extendVector(&objectTextureData, colorTriangle2, 2);
+  extendVector(&objectTextureData, colorTriangle3, 2);
   extendVector(&objectTextureData, colorTriangle4, 2);
   extendVector(&objectTextureData, colorTriangle5, 2);
   extendVector(&objectTextureData, colorTriangle6, 2);
@@ -472,7 +404,8 @@ GLuint createCubeUV()
   extendVector(&objectTextureData, colorTriangle11, 2);
   extendVector(&objectTextureData, colorTriangle12, 2);
 
-  for (GLfloat value : objectTextureData) {
+  for (GLfloat value : objectTextureData)
+  {
     cout << value << endl;
   }
   // exit(0);
@@ -491,9 +424,9 @@ void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> 
 
   // View: Camera matrix
   mat4 View = lookAt(
-      vec3(10, 3, 3), // Camera position (z, y, x)
-      vec3(0, 0, 0),  // Camera focus (z, y, x)
-      vec3(0, 1, 0)   // Head is up
+      vec3(4, 3, 3), // Camera position (z, y, x)
+      vec3(0, 0, 0), // Camera focus (z, y, x)
+      vec3(0, 1, 0)  // Head is up
   );
 
   // Model matrix
