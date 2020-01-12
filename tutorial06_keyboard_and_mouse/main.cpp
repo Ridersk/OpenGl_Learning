@@ -28,36 +28,39 @@ void createWindow(GLFWwindow **window, GLuint *vertexArrayId);
 void addInputs(GLFWwindow *window);
 void defineVertexArray(GLuint *VertexArrayID);
 GLuint createObjectBuffer(vector<GLfloat> bufferData);
-void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds, vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments);
+void createObjects(GLuint *programID, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds, vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments);
 void loadShaders(GLuint *programID);
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
 void swapBuffers(GLFWwindow *window);
-void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
-void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
+void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 mvp, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
+void draw(GLuint programID, GLuint mvpId, mat4 mvp, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
 void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId, GLuint objectUvId, int qttObjectFragments, GLint attrShaderObject, GLint attrShaderTexture, GLint attrShaderUv);
 GLuint createCube(vector<int> *qttObjectsFragments);
 GLuint createCubeTexture();
 GLuint createCubeUV();
-void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps);
 
 int main()
 {
   GLFWwindow *window;
   GLuint programID;
   GLuint vertexArrayID; // basis to use vertices (points of objects)
-  vector<GLuint> mvpIds;
-  vector<mat4> mvps;
+  GLuint mvpId;
+  mat4 mvp;
   vector<GLuint> objectIds;
   vector<GLuint> objectTextureIds;
   vector<GLuint> objectUvIds;
   vector<int> qttObjectsFragments;
+  
+
 
   createWindow(&window, &vertexArrayID);
   addInputs(window);
   loadShaders(&programID);
-  createObjects(&programID, &mvpIds, &mvps, &objectIds, &objectTextureIds, &objectUvIds, &qttObjectsFragments);
-  computeMatricesFromInputs(window, WINDOW_WIDTH, WINDOW_HEIGHT);
-  run(window, programID, mvpIds, mvps, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
+  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Only during the initialisation
+  mvpId = glGetUniformLocation(programID, "MVP");
+  createObjects(&programID, &objectIds, &objectTextureIds, &objectUvIds, &qttObjectsFragments);
+  run(window, programID, mvpId, mvp, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
 
   // Cleanup VBO and shader
   glDeleteProgram(programID);
@@ -146,15 +149,13 @@ GLuint createObjectBuffer(vector<GLfloat> bufferData)
   return bufferId;
 }
 
-void createObjects(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps,
-                   vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds,
+void createObjects(GLuint *programID, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds,
                    vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments)
 {
   // Cube
   objectIds->push_back(createCube(qttObjectsFragments));
   objectTextureIds->push_back(createCubeTexture());
   objectUvIds->push_back(createCubeUV());
-  addCubePerspective(programID, mvpIds, mvps);
 }
 
 void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints)
@@ -172,17 +173,17 @@ void swapBuffers(GLFWwindow *window)
   glfwPollEvents();
 }
 
-// mat4 perspectiveControl()
-// {
-//   computeMatricesFromInputs();
-//   mat4 ProjectionMatrix = getProjectionMatrix();
-//   mat4 ViewMatrix = getViewMatrix();
-//   mat4 ModelMatrix = mat4(1.0);
-//   mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-//   return MVP;
-// }
+mat4 perspectiveControl(GLFWwindow *window)
+{
+  computeMatricesFromInputs(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+  mat4 ProjectionMatrix = getProjectionMatrix();
+  mat4 ViewMatrix = getViewMatrix();
+  mat4 ModelMatrix = mat4(1.0);
+  mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+  return MVP;
+}
 
-void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
+void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 mvp,
          vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds,
          vector<int> qttObjectsFragments)
 {
@@ -194,20 +195,22 @@ void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat
   glEnable(GL_DEPTH_TEST);
   // Accept fragment if it closer to the camera than the former one
   glDepthFunc(GL_LESS);
+  // Cull triangles which normal is not towards the camera
+	glEnable(GL_CULL_FACE);
 
   do
   {
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
-    // perspectiveControl();
-    draw(programID, mvpIds, mvps, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
+    mvp = perspectiveControl(window);
+    draw(programID, mvpId, mvp, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0);
 }
 
-void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
+void draw(GLuint programID, GLuint mvpId, mat4 mvp,
           vector<GLuint> objectIds, vector<GLuint> objectTextureIds,
           vector<GLuint> objectUvIds, vector<int> qttObjectsFragments)
 {
@@ -217,10 +220,10 @@ void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
       programID, "vertexUV");
   GLuint attrShaderTexture = glGetUniformLocation(programID, "myTextureSampler");
 
-  for (int objectMvpId = 0; objectMvpId < mvpIds.size(); objectMvpId++)
+  for (int objectId = 0; objectId < objectIds.size(); objectId++)
   {
-    drawObject(mvpIds[objectMvpId], mvps[objectMvpId], objectIds[objectMvpId],
-               objectTextureIds[objectMvpId], objectUvIds[objectMvpId], qttObjectsFragments[objectMvpId],
+    drawObject(mvpId, mvp, objectIds[objectId],
+               objectTextureIds[objectId], objectUvIds[objectId], qttObjectsFragments[objectId],
                attrShaderObject, attrShaderTexture, attrShaderUv);
   }
 }
@@ -417,36 +420,5 @@ GLuint createCubeUV()
   extendVector(&objectTextureData, colorTriangle11, 2);
   extendVector(&objectTextureData, colorTriangle12, 2);
 
-  for (GLfloat value : objectTextureData)
-  {
-    cout << value << endl;
-  }
-  // exit(0);
-
   return (createObjectBuffer(objectTextureData));
-}
-
-void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
-{
-  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
-  // Only during the initialisation
-  mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
-
-  // Screen Projection, 45° Field of View
-  mat4 Projection = perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-  // View: Camera matrix
-  mat4 View = lookAt(
-      vec3(4, 3, 3), // Camera position (z, y, x)
-      vec3(0, 0, 0), // Camera focus (z, y, x)
-      vec3(0, 1, 0)  // Head is up
-  );
-
-  // Model matrix
-  mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-  mat4 Model = translationMatrix * mat4(1.0f); // model matix can to be Translation * Rotation * Scale
-
-  // ModelViewProjection
-  mat4 mvpgenerated = Projection * View * Model;
-  mvps->push_back(mvpgenerated);
 }
