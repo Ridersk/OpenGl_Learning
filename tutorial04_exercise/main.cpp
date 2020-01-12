@@ -16,7 +16,7 @@ using namespace glm;
 
 static const int WINDOW_WIDTH = 1366;
 static const int WINDOW_HEIGHT = 768;
-static const char TITLE[50] = "Tutorial 01";
+static const char TITLE[50] = "Tutorial 04 - Exercise";
 
 void addHints();
 GLFWwindow *openWindow();

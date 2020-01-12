@@ -11,13 +11,14 @@
 
 #include "../common/shader.hpp"
 #include "../common/texture.hpp"
+#include "../common/controls.hpp"
 
 using namespace std;
 using namespace glm;
 
 static const int WINDOW_WIDTH = 1366;
 static const int WINDOW_HEIGHT = 768;
-static const char TITLE[50] = "Tutorial 05";
+static const char TITLE[50] = "Tutorial 06";
 
 void addHints();
 GLFWwindow *openWindow();
@@ -55,6 +56,7 @@ int main()
   addInputs(window);
   loadShaders(&programID);
   createObjects(&programID, &mvpIds, &mvps, &objectIds, &objectTextureIds, &objectUvIds, &qttObjectsFragments);
+  computeMatricesFromInputs(window, WINDOW_WIDTH, WINDOW_HEIGHT);
   run(window, programID, mvpIds, mvps, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
 
   // Cleanup VBO and shader
@@ -170,6 +172,16 @@ void swapBuffers(GLFWwindow *window)
   glfwPollEvents();
 }
 
+// mat4 perspectiveControl()
+// {
+//   computeMatricesFromInputs();
+//   mat4 ProjectionMatrix = getProjectionMatrix();
+//   mat4 ViewMatrix = getViewMatrix();
+//   mat4 ModelMatrix = mat4(1.0);
+//   mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+//   return MVP;
+// }
+
 void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat4> mvps,
          vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds,
          vector<int> qttObjectsFragments)
@@ -188,6 +200,7 @@ void run(GLFWwindow *window, GLuint programID, vector<GLuint> mvpIds, vector<mat
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
+    // perspectiveControl();
     draw(programID, mvpIds, mvps, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
