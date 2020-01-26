@@ -9,12 +9,12 @@
 
 using namespace std;
 
-// glm::mat4 ViewMatrix;
-glm::mat4 ViewMatrix = lookAt(
-    vec3(4, 3, 3), // Camera position (z, y, x)
-    vec3(3, 2, 2), // Camera focus (z, y, x)
-    vec3(0, 1, 0)  // Head is up
-);
+glm::mat4 ViewMatrix;
+// glm::mat4 ViewMatrix = lookAt(
+//     vec3(4, 3, 3), // Camera position (z, y, x)
+//     vec3(3, 2, 2), // Camera focus (z, y, x)
+//     vec3(0, 1, 0)  // Head is up
+// );
 glm::mat4 ProjectionMatrix;
 
 glm::mat4 getViewMatrix()
@@ -29,8 +29,10 @@ glm::mat4 getProjectionMatrix()
 float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
-// fix position to look around
-// glm::vec3 position = glm::vec3(4, 3, 3);
+// Fix position to look to the cube center
+const static glm::vec3 CUBE_CENTER = vec3(5, 5, 5);
+// initial position : on +z
+glm::vec3 position = CUBE_CENTER;
 
 // horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
@@ -75,8 +77,7 @@ void computeMatricesFromInputs(GLFWwindow *window, int width, int height)
   glm::vec3 up = glm::cross(right, direction);
 
   // variable position to look the center of cube
-  glm::vec3 position = vec3(5, 5, 5) + vec3(5.0f * cos(deltaTime), 10.0f, 5.0f * sin(deltaTime));
-
+  position = CUBE_CENTER + vec3(2.0f * cos(deltaTime), 10.0f, 5.0f * sin(deltaTime));
 
   // Move forward
   if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
