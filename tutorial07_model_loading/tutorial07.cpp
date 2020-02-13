@@ -36,7 +36,7 @@ void swapBuffers(GLFWwindow *window);
 void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 mvp, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
 void draw(GLuint programID, GLuint mvpId, mat4 mvp, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
 void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId, GLuint objectUvId, int qttObjectFragments, GLint attrShaderObject, GLint attrShaderTexture, GLint attrShaderUv);
-GLuint createCube(vector<vec3> vertices, vector<int> *qttObjectsFragments);
+GLuint createCubeVertex(vector<vec3> vertices, vector<int> *qttObjectsFragments);
 GLuint createCubeTexture();
 GLuint createCubeUV(vector<vec2> uvs);
 
@@ -157,7 +157,7 @@ void createObjects(GLuint *programID, vector<GLuint> *objectIds, vector<GLuint> 
   std::vector<glm::vec2> uvs;
   std::vector<glm::vec3> normals;
   loadOBJ("./cube.obj", vertices, uvs, normals);
-  objectIds->push_back(createCube(vertices, qttObjectsFragments));
+  objectIds->push_back(createCubeVertex(vertices, qttObjectsFragments));
   objectTextureIds->push_back(createCubeTexture());
   objectUvIds->push_back(createCubeUV(uvs));
 }
@@ -277,7 +277,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
 }
 
 // Data Objects
-GLuint createCube(vector<vec3> vertices, vector<int> *qttObjectsFragments)
+GLuint createCubeVertex(vector<vec3> vertices, vector<int> *qttObjectsFragments)
 {
 
   qttObjectsFragments->push_back(vertices.size());

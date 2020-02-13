@@ -1,9 +1,9 @@
 all:
-	g++ -I/common main.cpp ../common/*.cpp -o main -L/usr/local/lib -lGL -lGLEW -lm -lglfw
+	g++ -I/common tutorial06.cpp ../common/*.cpp -o prog -L/usr/local/lib -lGL -lGLEW -lm -lglfw
 
 run:
-	./main
+	./prog
 
 brun:
-	g++ -I/common main.cpp ../common/*.cpp -o main -L/usr/local/lib -lGL -lGLEW -lm -lglfw
-	./main
+	g++ -I/common tutorial06.cpp ../common/*.cpp -o prog -L/usr/local/lib -lGL -lGLEW -lm -lglfw
+	./prog
