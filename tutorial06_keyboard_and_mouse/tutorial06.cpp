@@ -56,7 +56,7 @@ int main()
   createWindow(&window, &vertexArrayID);
   addInputs(window);
   loadShaders(&programID);
-  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Get a handle for our "MVP" uniform in vertex shader file
   // Only during the initialisation
   mvpId = glGetUniformLocation(programID, "MVP");
   createObjects(&programID, &objectIds, &objectTextureIds, &objectUvIds, &qttObjectsFragments);
@@ -257,7 +257,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
   glEnableVertexAttribArray(attrShaderUv);
   glBindBuffer(GL_ARRAY_BUFFER, objectUvId);
   glVertexAttribPointer(
-      attrShaderUv, // shader in  MyVertexShader.lma (layout(location = 0))
+      attrShaderUv, // shader in  vertex shader file (layout(location = 1))
       2,            // dimensions
       GL_FLOAT,     // type
       GL_FALSE,     // normalization

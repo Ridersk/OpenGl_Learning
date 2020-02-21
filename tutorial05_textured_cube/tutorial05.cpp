@@ -241,7 +241,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
   glEnableVertexAttribArray(attrShaderUv);
   glBindBuffer(GL_ARRAY_BUFFER, objectUvId);
   glVertexAttribPointer(
-      attrShaderUv, // shader in  MyVertexShader.lma (layout(location = 0))
+      attrShaderUv, // shader in  vertex shader file (layout(location = 1))
       2,            // dimensions
       GL_FLOAT,     // type
       GL_FALSE,     // normalization
@@ -415,7 +415,7 @@ GLuint createCubeUV()
 
 void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
 {
-  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Get a handle for our "MVP" uniform in vertex shader file
   // Only during the initialisation
   mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
 

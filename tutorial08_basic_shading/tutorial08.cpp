@@ -28,37 +28,33 @@ void createOpenGlContext(GLFWwindow *window);
 void createWindow(GLFWwindow **window, GLuint *vertexArrayId);
 void addInputs(GLFWwindow *window);
 void defineVertexArray(GLuint *VertexArrayID);
-GLuint createVertexBuffer(vector<vec3> bufferData);
-void createObjects(GLuint *programID, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds, vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments);
+GLuint createVertexBuffer(vector<vec3> vertices);
+void createObjects(GLuint *programID, vector<GLuint> *verticesIds, vector<GLuint> *uvsIds, vector<GLuint> *normalsIds, vector<GLuint> *textureIds, vector<int> *qttObjectsFragments);
 void loadShaders(GLuint *programID);
+void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints);
 void swapBuffers(GLFWwindow *window);
-void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 mvp, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
-void draw(GLuint programID, GLuint mvpId, mat4 mvp, vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds, vector<int> qttObjectsFragments);
-void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId, GLuint objectUvId, int qttObjectFragments, GLint attrShaderObject, GLint attrShaderTexture, GLint attrShaderUv);
-GLuint createCubeVertex(vector<vec3> vertices, vector<int> *qttObjectsFragments);
-GLuint createCubeTexture();
-GLuint createCubeUV(vector<vec2> uvs);
+void run(GLFWwindow *window, GLuint programID, vector<GLuint> verticesIds, vector<GLuint> uvsIds, vector<GLuint> normalsIds, vector<GLuint> textureIds, vector<int> qttObjectsFragments);
+void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> attribsMvp, vector<GLuint> verticesIds, vector<GLuint> uvsIds, vector<GLuint> normalsIds, vector<GLuint> textureIds, vector<int> qttObjectsFragments);
+void drawObject(vector<GLuint> mvpIds, vector<mat4> attribsMvp, GLuint verticesId, GLuint uvsId, GLuint normalsIds, GLuint textureId, int qttObjectFragments, GLint attrShaderObject, GLint attrShaderTexture, GLint attrShaderUv);
+GLuint createTexture();
 
 int main()
 {
   GLFWwindow *window;
   GLuint programID;
   GLuint vertexArrayID; // basis to use vertices (points of objects)
-  GLuint mvpId;
-  mat4 mvp;
-  vector<GLuint> objectIds;
-  vector<GLuint> objectTextureIds;
-  vector<GLuint> objectUvIds;
+  vector<GLuint> verticesIds;
+  vector<GLuint> uvsIds;
+  vector<GLuint> normalsIds;
+  vector<GLuint> textureIds;
   vector<int> qttObjectsFragments;
 
   createWindow(&window, &vertexArrayID);
   addInputs(window);
   loadShaders(&programID);
-  // Get a handle for our "MVP" uniform in vertex shader file
-  // Only during the initialisation
-  mvpId = glGetUniformLocation(programID, "MVP");
-  createObjects(&programID, &objectIds, &objectTextureIds, &objectUvIds, &qttObjectsFragments);
-  run(window, programID, mvpId, mvp, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
+
+  createObjects(&programID, &verticesIds, &uvsIds, &normalsIds, &textureIds, &qttObjectsFragments);
+  run(window, programID, verticesIds, uvsIds, normalsIds, textureIds, qttObjectsFragments);
 
   // Cleanup VBO and shader
   glDeleteProgram(programID);
@@ -135,30 +131,45 @@ void loadShaders(GLuint *programID)
   *programID = LoadShaders("TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader");
 }
 
-GLuint createVertexBuffer(vector<vec3> bufferData)
+template <class T>
+GLuint createBuffer(vector<T> bufferData)
 {
+
   GLuint bufferId;
   glGenBuffers(1, &bufferId);
   glBindBuffer(GL_ARRAY_BUFFER, bufferId);
   glBufferData(
       GL_ARRAY_BUFFER,
-      bufferData.size() * sizeof(vec3),
+      bufferData.size() * sizeof(T),
       &bufferData[0], GL_STATIC_DRAW);
   return bufferId;
 }
 
-void createObjects(GLuint *programID, vector<GLuint> *objectIds, vector<GLuint> *objectTextureIds,
-                   vector<GLuint> *objectUvIds, vector<int> *qttObjectsFragments)
+void createObjects(GLuint *programID, vector<GLuint> *verticesIds, vector<GLuint> *uvsIds,
+                   vector<GLuint> *normalsIds, vector<GLuint> *textureIds,
+                   vector<int> *qttObjectsFragments)
 {
   // Cube
-  // load vertices, uvs and normals
-  std::vector<glm::vec3> vertices;
+  std::vector<glm::vec3> vertices, normals;
   std::vector<glm::vec2> uvs;
-  std::vector<glm::vec3> normals;
-  loadOBJ("./cube.obj", vertices, uvs, normals);
-  objectIds->push_back(createCubeVertex(vertices, qttObjectsFragments));
-  objectTextureIds->push_back(createCubeTexture());
-  objectUvIds->push_back(createCubeUV(uvs));
+  loadOBJ("./suzanne.obj", vertices, uvs, normals);
+  qttObjectsFragments->push_back(vertices.size());
+  // Obj
+  verticesIds->push_back(createBuffer(vertices));
+  uvsIds->push_back(createBuffer(uvs));
+  normalsIds->push_back(createBuffer(normals));
+  // Texture
+  textureIds->push_back(createTexture());
+  // textureIds->push_back(0);
+}
+
+void extendVector(vector<GLfloat> *objectVertices, GLfloat *object, int qttPoints)
+{
+  int dimensions = 3;
+  for (int i = 0; i < dimensions * qttPoints; i++)
+  {
+    objectVertices->push_back(object[i]);
+  }
 }
 
 void swapBuffers(GLFWwindow *window)
@@ -167,20 +178,38 @@ void swapBuffers(GLFWwindow *window)
   glfwPollEvents();
 }
 
-mat4 perspectiveControl(GLFWwindow *window)
+vector<mat4> perspectiveControl(GLFWwindow *window)
 {
-  computeMatricesFromInputs(window, WINDOW_WIDTH, WINDOW_HEIGHT);
+  vector<mat4> attribsMVp;
+  computeMatricesFromInputs(window, WINDOW_WIDTH, WINDOW_HEIGHT, false);
   mat4 ProjectionMatrix = getProjectionMatrix();
   mat4 ViewMatrix = getViewMatrix();
   mat4 ModelMatrix = mat4(1.0);
   mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-  return MVP;
+
+  attribsMVp.push_back(MVP);
+  attribsMVp.push_back(ModelMatrix);
+  attribsMVp.push_back(ViewMatrix);
+  return attribsMVp;
 }
 
-void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 mvp,
-         vector<GLuint> objectIds, vector<GLuint> objectTextureIds, vector<GLuint> objectUvIds,
-         vector<int> qttObjectsFragments)
+void run(GLFWwindow *window, GLuint programID,
+         vector<GLuint> verticesIds, vector<GLuint> uvsIds, vector<GLuint> normalsIds,
+         vector<GLuint> textureIds, vector<int> qttObjectsFragments)
 {
+  vector<GLuint> mvpIds;
+  GLuint mvpId, modelId, viewId;
+  
+  // Get a handle for our "MVP" uniform in vertex shader file
+  // Only during the initialisation
+  vector<mat4> attribsMvp;
+  mvpId = glGetUniformLocation(programID, "MVP");
+  modelId = glGetUniformLocation(programID, "M");
+  viewId = glGetUniformLocation(programID, "V");
+  
+  mvpIds.push_back(mvpId);
+  mvpIds.push_back(modelId);
+  mvpIds.push_back(viewId);
 
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -197,16 +226,16 @@ void run(GLFWwindow *window, GLuint programID, GLuint mvpId, mat4 mvp,
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID); // use my program
-    mvp = perspectiveControl(window);
-    draw(programID, mvpId, mvp, objectIds, objectTextureIds, objectUvIds, qttObjectsFragments);
+    attribsMvp = perspectiveControl(window);
+    draw(programID, mvpIds, attribsMvp, verticesIds, uvsIds, normalsIds, textureIds, qttObjectsFragments);
     swapBuffers(window);
   } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0);
 }
 
-void draw(GLuint programID, GLuint mvpId, mat4 mvp,
-          vector<GLuint> objectIds, vector<GLuint> objectTextureIds,
-          vector<GLuint> objectUvIds, vector<int> qttObjectsFragments)
+void draw(GLuint programID, vector<GLuint> mvpIds, vector<mat4> attribsMvp,
+          vector<GLuint> verticesIds, vector<GLuint> uvsIds, vector<GLuint> normalsIds,
+          vector<GLuint> textureIds, vector<int> qttObjectsFragments)
 {
   GLint attrShaderObject = glGetAttribLocation(
       programID, "vertexPosition_modelspace");
@@ -214,30 +243,42 @@ void draw(GLuint programID, GLuint mvpId, mat4 mvp,
       programID, "vertexUV");
   GLuint attrShaderTexture = glGetUniformLocation(programID, "myTextureSampler");
 
-  for (int objectId = 0; objectId < objectIds.size(); objectId++)
+
+  for (int objectId = 0; objectId < verticesIds.size(); objectId++)
   {
-    drawObject(mvpId, mvp, objectIds[objectId],
-               objectTextureIds[objectId], objectUvIds[objectId], qttObjectsFragments[objectId],
+    drawObject(mvpIds, attribsMvp, verticesIds[objectId], uvsIds[objectId], normalsIds[objectId],
+               textureIds[objectId], qttObjectsFragments[objectId],
                attrShaderObject, attrShaderTexture, attrShaderUv);
   }
 }
 
-void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId, GLuint objectUvId,
-                int qttObjectFragments, GLint attrShaderObject, GLint attrShaderTexture,
-                GLint attrShaderUv)
+void drawObject(vector<GLuint> mvpIds, vector<mat4> attribsMvp, GLuint verticesId, GLuint uvsId, GLuint normalsId,
+                GLuint textureId, int qttObjectFragments, GLint attrShaderObject,
+                GLint attrShaderTexture, GLint attrShaderUv)
 {
+  mat4 mvp = attribsMvp[0];
+  mat4 modelMatrix = attribsMvp[1];
+  mat4 viewMatrix = attribsMvp[2];
+
+  GLuint mvpId = mvpIds[0];
+  GLuint modelId = mvpIds[1];
+  GLuint viewId = mvpIds[2];
+
   // use the perspective of the vertex shader
   glUniformMatrix4fv(mvpId, 1, GL_FALSE, &mvp[0][0]);
+  glUniformMatrix4fv(modelId, 1, GL_FALSE, &modelMatrix[0][0]);
+  glUniformMatrix4fv(viewId, 1, GL_FALSE, &viewMatrix[0][0]);
+
 
   // Bind our texture in Texture Unit 0
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, objectTextureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
   // Set our "myTextureSampler" sampler to use Texture Unit 0
   glUniform1i(attrShaderTexture, 0);
 
-  // object vertex
+  // Vertices
   glEnableVertexAttribArray(attrShaderObject);
-  glBindBuffer(GL_ARRAY_BUFFER, objectId);
+  glBindBuffer(GL_ARRAY_BUFFER, verticesId);
   glVertexAttribPointer(
       attrShaderObject, // shader in vertex shader file (layout(location = 0))
       3,                // dimensions
@@ -249,7 +290,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
 
   // UV Buffer
   glEnableVertexAttribArray(attrShaderUv);
-  glBindBuffer(GL_ARRAY_BUFFER, objectUvId);
+  glBindBuffer(GL_ARRAY_BUFFER, uvsId);
   glVertexAttribPointer(
       attrShaderUv, // shader in  vertex shader file (layout(location = 1))
       2,            // dimensions
@@ -259,23 +300,27 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectTextureId,
       (void *)0     // array buffer offset
   );
 
+  // Normals Buffer
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, normalsId);
+  glVertexAttribPointer(
+      2,                // shader position
+      3,                // dimensions
+      GL_FLOAT,         // type
+      GL_FALSE,         // normalization
+      0,                // stride
+      (void *)0         // array buffer offset
+  );
+
   // Draw the fragments(triangles) !
   glDrawArrays(GL_TRIANGLES, 0, qttObjectFragments * 3);
 
   glDisableVertexAttribArray(attrShaderObject);
   glDisableVertexAttribArray(attrShaderUv);
+  glDisableVertexAttribArray(2);
 }
 
-// Data Objects
-GLuint createCubeVertex(vector<vec3> vertices, vector<int> *qttObjectsFragments)
-{
-
-  qttObjectsFragments->push_back(vertices.size());
-
-  return (createVertexBuffer(vertices));
-}
-
-GLuint createCubeTexture()
+GLuint createTexture()
 {
   // Open the file
   cout << "Loading texture" << endl;
@@ -283,21 +328,4 @@ GLuint createCubeTexture()
   GLuint textureId = loadDDS("./uvmap.DDS");
 
   return textureId;
-}
-
-GLuint createUvBuffer(vector<vec2> bufferData)
-{
-  GLuint bufferId;
-  glGenBuffers(1, &bufferId);
-  glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-  glBufferData(
-      GL_ARRAY_BUFFER,
-      bufferData.size() * sizeof(vec2),
-      &bufferData[0], GL_STATIC_DRAW);
-  return bufferId;
-}
-
-GLuint createCubeUV(vector<vec2> uvs)
-{
-  return (createUvBuffer(uvs));
 }

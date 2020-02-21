@@ -345,7 +345,7 @@ void draw(GLFWwindow *window, GLuint programID, GLuint object, GLuint colorObjec
   glEnableVertexAttribArray(position_attrib_color);
   glBindBuffer(GL_ARRAY_BUFFER, colorObject);
   glVertexAttribPointer(
-      position_attrib_color, // shader in  MyVertexShader.lma (layout(location = 0))
+      position_attrib_color, // shader in  vertex shader file (layout(location = 1))
       pointDimensions,       // size
       GL_FLOAT,              // type
       GL_FALSE,              // normalization

@@ -41,7 +41,10 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
-void computeMatricesFromInputs(GLFWwindow *window, int width, int height)
+#define lookObjectCenter(deltaTime) (CUBE_CENTER + vec3(2.0f * cos(deltaTime), 10.0f, 5.0f * sin(deltaTime)))
+
+
+void computeMatricesFromInputs(GLFWwindow *window, int width, int height, bool lookCenter)
 {
   // glfwGetTime is called only once, the first time this function is called
   static double lastTime = glfwGetTime();
@@ -77,7 +80,9 @@ void computeMatricesFromInputs(GLFWwindow *window, int width, int height)
   glm::vec3 up = glm::cross(right, direction);
 
   // variable position to look the center of cube
-  position = CUBE_CENTER + vec3(2.0f * cos(deltaTime), 10.0f, 5.0f * sin(deltaTime));
+  if (lookCenter) {
+    position = lookObjectCenter(deltaTime);
+  }
 
   // Move forward
   if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)

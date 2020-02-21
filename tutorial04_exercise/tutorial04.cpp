@@ -226,7 +226,7 @@ void drawObject(GLuint mvpId, mat4 mvp, GLuint objectId, GLuint objectColorId, i
   glEnableVertexAttribArray(posAttrShaderColor);
   glBindBuffer(GL_ARRAY_BUFFER, objectColorId);
   glVertexAttribPointer(
-      posAttrShaderColor, // shader in  MyVertexShader.lma (layout(location = 0))
+      posAttrShaderColor, // shader in  vertex shader file (layout(location = 1))
       3,                  // dimensions
       GL_FLOAT,           // type
       GL_FALSE,           // normalization
@@ -440,7 +440,7 @@ GLuint createPyramidColor()
 
 void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
 {
-  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Get a handle for our "MVP" uniform in vertex shader file
   // Only during the initialisation
   mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
 
@@ -465,7 +465,7 @@ void addCubePerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> 
 
 void addPyramidPerspective(GLuint *programID, vector<GLuint> *mvpIds, vector<mat4> *mvps)
 {
-  // Get a handle for our "MVP" uniform in MyVertexShader.lvet
+  // Get a handle for our "MVP" uniform in vertex shader file
   // Only during the initialisation
   mvpIds->push_back(glGetUniformLocation(*programID, "MVP"));
 

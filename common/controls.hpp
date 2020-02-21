@@ -6,7 +6,7 @@
 using namespace glm;
 
 
-void computeMatricesFromInputs(GLFWwindow *window, int width, int height);
+void computeMatricesFromInputs(GLFWwindow *window, int width, int height, bool lookCenter);
 glm::mat4 getViewMatrix();
 glm::mat4 getProjectionMatrix();
 
